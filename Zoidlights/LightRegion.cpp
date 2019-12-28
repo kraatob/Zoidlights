@@ -1,8 +1,8 @@
 #include "LightRegion.h"
 
-LightRegion::LightRegion(DuplicationManager* l_duplicationManager, UINT x, UINT y, UINT width, UINT height)
-{
-	m_duplicationManager = l_duplicationManager;
+LightRegion::LightRegion(Device* device, DesktopDuplication* desktopDuplication, UINT x, UINT y, UINT width, UINT height) {
+	m_device = device;
+	m_desktopDuplication = desktopDuplication;
 	InitTexture();
 	m_box = D3D11_BOX{ x, y, 0, x + width, y + height, 1 };
 	m_width = width;
@@ -30,25 +30,25 @@ void LightRegion::InitTexture()
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 	desc.MiscFlags = 0;
 
-	m_duplicationManager->m_Device->CreateTexture2D(&desc, nullptr, &m_texture);
+	m_device->m_device->CreateTexture2D(&desc, nullptr, &m_texture);
 }
 
 DWORD LightRegion::getColor()
 {
 	D3D11_TEXTURE2D_DESC desc;
-    m_duplicationManager->m_AcquiredDesktopImage->GetDesc(&desc);
+    m_desktopDuplication->m_acquiredDesktopImage->GetDesc(&desc);
 	// OPTIMIZE: see https://github.com/Microsoft/graphics-driver-samples/blob/master/render-only-sample/rostest/util.cpp#L244
 
-	m_duplicationManager->m_DeviceContext->CopySubresourceRegion(m_texture, 0, 0, 0, 0, m_duplicationManager->m_AcquiredDesktopImage, 0, &m_box);
+	m_device->m_deviceContext->CopySubresourceRegion(m_texture, 0, 0, 0, 0, m_desktopDuplication->m_acquiredDesktopImage, 0, &m_box);
 
 	D3D11_MAPPED_SUBRESOURCE MapInfo;
 
-	HRESULT hr = m_duplicationManager->m_DeviceContext->Map(m_texture, 0, D3D11_MAP_READ, 0, &MapInfo);
+	HRESULT hr = m_device->m_deviceContext->Map(m_texture, 0, D3D11_MAP_READ, 0, &MapInfo);
 	if (FAILED(hr)) {
 		throw L"Failed to map staging texture";
 	}
 	DWORD color = AverageColor(&MapInfo, m_width, m_height);
-	m_duplicationManager->m_DeviceContext->Unmap(m_texture, 0);
+	m_device->m_deviceContext->Unmap(m_texture, 0);
 	return color;
 }
 

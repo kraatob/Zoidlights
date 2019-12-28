@@ -27,10 +27,19 @@
     <ClInclude Include="Zoidlights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DuplicationManager.h">
+    <ClInclude Include="LightRegion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LightRegion.h">
+    <ClInclude Include="Device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Region.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DesktopDuplication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,10 +47,19 @@
     <ClCompile Include="Zoidlights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DuplicationManager.cpp">
+    <ClCompile Include="LightRegion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LightRegion.cpp">
+    <ClCompile Include="Device.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Region.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DesktopDuplication.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,12 +3,13 @@
 
 #include "framework.h"
 #include "Zoidlights.h"
-#include "DuplicationManager.h"
+#include "DesktopDuplication.h"
 #include "LightRegion.h"
 
 // Global Variables:
-HINSTANCE hInst;                                // current instance
-DuplicationManager duplicationManager;
+HINSTANCE hInst;
+Device device;
+DesktopDuplication desktopDuplication(&device);
 Light lights[40];
 const UINT FRAME_RATE = 15;
 
@@ -92,7 +93,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(hWnd, nCmdShow);
 
-   duplicationManager.InitDuplication(2);
+   device.Init();
+
+   desktopDuplication.StartDuplication(2);
 
    InitLights();
 
@@ -111,7 +114,7 @@ void InitLight(Light* light, double x, double y)
     light->x = x;
     light->y = y;
     light->color = RGB(0, 0, 0);
-    light->region = new LightRegion(&duplicationManager, displayX, displayY, size, size);
+    light->region = new LightRegion(&device, &desktopDuplication, displayX, displayY, size, size);
 }
 
 void InitLights()
@@ -202,7 +205,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
         switch (wParam) {
 		case IDT_LOOP_TIMER: 
-            duplicationManager.UpdateFrame();
+            desktopDuplication.UpdateFrame();
             for (int i = 0; i < 40; i++)
             {
                 lights[i].color = lights[i].region->getColor();

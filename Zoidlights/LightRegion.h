@@ -1,14 +1,15 @@
-#include "DuplicationManager.h"
+#include "DesktopDuplication.h"
 
 #pragma once
 class LightRegion
 {
 	public:
-		LightRegion(DuplicationManager* duplicationManager, UINT x, UINT y, UINT width, UINT height);
+		LightRegion(Device* device, DesktopDuplication* desktopDuplication, UINT x, UINT y, UINT width, UINT height);
 		~LightRegion();
 		DWORD getColor();
 	private:
-		DuplicationManager* m_duplicationManager;
+		DesktopDuplication* m_desktopDuplication;
+		Device* m_device;
 		ID3D11Texture2D* m_texture;
 		D3D11_BOX m_box;
 		UINT m_width;

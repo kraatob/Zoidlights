@@ -149,16 +149,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DuplicationManager.h" />
+    <ClInclude Include="Device.h" />
+    <ClInclude Include="DesktopDuplication.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="LightRegion.h" />
+    <ClInclude Include="Region.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Zoidlights.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DuplicationManager.cpp" />
+    <ClCompile Include="Device.cpp" />
+    <ClCompile Include="DesktopDuplication.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightRegion.cpp" />
+    <ClCompile Include="Region.cpp" />
     <ClCompile Include="Zoidlights.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -30,7 +30,7 @@
     <ClInclude Include="DuplicationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LightRegions.h">
+    <ClInclude Include="LightRegion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClCompile Include="DuplicationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LightRegions.cpp">
+    <ClCompile Include="LightRegion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

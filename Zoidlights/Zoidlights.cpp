@@ -4,19 +4,21 @@
 #include "framework.h"
 #include "Zoidlights.h"
 #include "DuplicationManager.h"
-#include "LightRegions.h"
+#include "LightRegion.h"
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 DuplicationManager duplicationManager;
-LightRegions lightRegions(&duplicationManager);
-DWORD color = RGB(0, 0, 0);
+Light lights[40];
+const UINT FRAME_RATE = 15;
+
 
 
 // Forward declarations of functions included in this code module:
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+void                InitLights();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -86,18 +88,73 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   SetTimer(hWnd, IDT_LOOP_TIMER, 2000, NULL);
+   SetTimer(hWnd, IDT_LOOP_TIMER, (UINT) (1000.0 / FRAME_RATE), NULL);
 
    ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
 
    duplicationManager.InitDuplication(2);
-   lightRegions.InitLightRegion();
-   OutputDebugStringW(L"Inited!.");
 
+   InitLights();
+
+   UpdateWindow(hWnd);
 
    return TRUE;
 }
+
+void InitLight(Light* light, double x, double y)
+{
+    const UINT displayWidth = 1920;
+    const UINT displayHeight = 1080;
+    const UINT size = 10;
+    UINT displayX = (UINT)(x * displayWidth) - size / 2;
+    UINT displayY = (UINT)(y * displayHeight) - size / 2;
+    light->x = x;
+    light->y = y;
+    light->color = RGB(0, 0, 0);
+    light->region = new LightRegion(&duplicationManager, displayX, displayY, size, size);
+}
+
+void InitLights()
+{
+    const double border = 0.1;
+
+    UINT counter = 0;
+    double x, y;
+    Light *light;
+    // top lights
+    y = border;
+    for (UINT i = 0; i < 13; i++)
+    {
+        light = &lights[counter++];
+        x = border + (1 - 2 * border) * ((double)i / 12);
+		InitLight(light, x, y);
+   }
+    // bottom lights
+    y = 1 - border;
+    for (UINT i = 0; i < 13; i++)
+    {
+        light = &lights[counter++];
+        x = border + (1 - 2 * border) * ((double)i / 12);
+		InitLight(light, x, y);
+   }
+    // left lights
+    x = border;
+    for (UINT i = 1; i < 8; i++)
+    {
+        light = &lights[counter++];
+        y = border + (1 - 2 * border) * ((double)i / 8);
+		InitLight(light, x, y);
+   }
+    // right lights
+    x = 1 - border;
+    for (UINT i = 1; i < 8; i++)
+    {
+        light = &lights[counter++];
+        y = border + (1 - 2 * border) * ((double)i / 8);
+		InitLight(light, x, y);
+   }
+}
+
 
 //
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
@@ -121,12 +178,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            LOGBRUSH lbBrushDefinition;
-            lbBrushDefinition.lbStyle = BS_SOLID;
-            lbBrushDefinition.lbColor = color;
-            HBRUSH hBrush = CreateBrushIndirect(&lbBrushDefinition);
-            FillRect(hdc, &ps.rcPaint, hBrush);
-            DeleteObject(hBrush);
+			RECT boundingBox;
+			GetClientRect(hWnd, &boundingBox);
+            for (int i = 0; i < 40; i++)
+            {
+                Light *light = &lights[i];
+				LOGBRUSH lbBrushDefinition;
+				lbBrushDefinition.lbStyle = BS_SOLID;
+                lbBrushDefinition.lbColor = light->color;
+                LONG x = (LONG)(light->x * (boundingBox.right - boundingBox.left)) + boundingBox.left;
+                LONG y = (LONG)(light->y * (boundingBox.bottom - boundingBox.top)) + boundingBox.top;
+                RECT drawBox = RECT{ x - 10, y - 10, x + 10, y + 10 };
+				HBRUSH hBrush = CreateBrushIndirect(&lbBrushDefinition);
+				FillRect(hdc, &drawBox, hBrush);
+				DeleteObject(hBrush);
+            }
             EndPaint(hWnd, &ps);
         }
         break;
@@ -136,7 +202,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
         switch (wParam) {
 		case IDT_LOOP_TIMER: 
-            color = lightRegions.getColor();
+            duplicationManager.UpdateFrame();
+            for (int i = 0; i < 40; i++)
+            {
+                lights[i].color = lights[i].region->getColor();
+            }
             InvalidateRect(hWnd, NULL, FALSE);
             UpdateWindow(hWnd);
             break;

@@ -67,7 +67,7 @@ void DuplicationManager::InitDuplication(UINT Output)
     // Create device
     for (UINT DriverTypeIndex = 0; DriverTypeIndex < NumDriverTypes; ++DriverTypeIndex)
     {
-        hr = D3D11CreateDevice(nullptr, DriverTypes[DriverTypeIndex], nullptr, D3D11_CREATE_DEVICE_DEBUG, FeatureLevels, NumFeatureLevels,
+        hr = D3D11CreateDevice(nullptr, DriverTypes[DriverTypeIndex], nullptr, 0, FeatureLevels, NumFeatureLevels,
         D3D11_SDK_VERSION, &m_Device, &FeatureLevel, &m_DeviceContext);
         if (SUCCEEDED(hr))
         {

@@ -5,14 +5,15 @@
 #include "Zoidlights.h"
 #include "DesktopDuplication.h"
 #include "LightRegion.h"
+#include "Constants.h"
 
 // Global Variables:
 HINSTANCE hInst;
 Device device;
 DesktopDuplication desktopDuplication(&device);
-Light lights[40];
-const UINT FRAME_RATE = 15;
-
+LightRegion* lightRegions[4];
+Light* lights;
+UINT lightCount;
 
 
 // Forward declarations of functions included in this code module:
@@ -95,7 +96,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    device.Init();
 
-   desktopDuplication.StartDuplication(2);
+   desktopDuplication.StartDuplication(0);
 
    InitLights();
 
@@ -104,57 +105,53 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-void InitLight(Light* light, double x, double y)
-{
-    const UINT displayWidth = 1920;
-    const UINT displayHeight = 1080;
-    const UINT size = 10;
-    UINT displayX = (UINT)(x * displayWidth) - size / 2;
-    UINT displayY = (UINT)(y * displayHeight) - size / 2;
-    light->x = x;
-    light->y = y;
-    light->color = RGB(0, 0, 0);
-    light->region = new LightRegion(&device, &desktopDuplication, displayX, displayY, size, size);
-}
-
 void InitLights()
 {
-    const double border = 0.1;
+    Size dimensions = desktopDuplication.GetDimensions();
+    double aspectRatio = (double)dimensions.cx / (double)dimensions.cy;
+    UINT sampleDistance = (UINT)(BORDER_SIZE_OF_X * dimensions.cx - 1) / (SAMPLES - 1);
+    UINT border = sampleDistance * (SAMPLES - 1) + 1;
+    UINT lightCountX = dimensions.cx / sampleDistance;
+    UINT lightCountY = dimensions.cy / sampleDistance;
+    lightCount = 2 * (lightCountX + lightCountY);
+    lights = new Light[lightCount];
 
-    UINT counter = 0;
-    double x, y;
-    Light *light;
-    // top lights
-    y = border;
-    for (UINT i = 0; i < 13; i++)
-    {
-        light = &lights[counter++];
-        x = border + (1 - 2 * border) * ((double)i / 12);
-		InitLight(light, x, y);
+    UINT lightCounter = 0;
+
+    // top
+    lightRegions[0] = new LightRegion(&device, &desktopDuplication, 0, 0, dimensions.cx, border, FALSE, lightCountX);
+    for (UINT i = 0; i < lightCountX; i++) {
+        Light *light = &lights[lightCounter++];
+        light->color = &lightRegions[0]->m_lights[i];
+        light->x = i * (1.0 / (lightCountX - 1));
+        light->y = 0;
    }
-    // bottom lights
-    y = 1 - border;
-    for (UINT i = 0; i < 13; i++)
-    {
-        light = &lights[counter++];
-        x = border + (1 - 2 * border) * ((double)i / 12);
-		InitLight(light, x, y);
+
+    // right
+    lightRegions[1] = new LightRegion(&device, &desktopDuplication, dimensions.cx - border, 0, border, dimensions.cy, TRUE, lightCountY);
+    for (UINT i = 0; i < lightCountY; i++) {
+        Light *light = &lights[lightCounter++];
+        light->color = &lightRegions[1]->m_lights[i];
+        light->x = 1; 
+        light->y = i * (1.0 / (lightCountY - 1));
    }
-    // left lights
-    x = border;
-    for (UINT i = 1; i < 8; i++)
-    {
-        light = &lights[counter++];
-        y = border + (1 - 2 * border) * ((double)i / 8);
-		InitLight(light, x, y);
+
+    // bottom
+    lightRegions[2] = new LightRegion(&device, &desktopDuplication, 0, dimensions.cy - border, dimensions.cx, border, FALSE, lightCountX);
+    for (UINT i = 0; i < lightCountX; i++) {
+        Light *light = &lights[lightCounter++];
+        light->color = &lightRegions[2]->m_lights[i];
+        light->x = i * (1.0 / (lightCountX - 1));
+        light->y = 1;
    }
-    // right lights
-    x = 1 - border;
-    for (UINT i = 1; i < 8; i++)
-    {
-        light = &lights[counter++];
-        y = border + (1 - 2 * border) * ((double)i / 8);
-		InitLight(light, x, y);
+
+    // left
+    lightRegions[3] = new LightRegion(&device, &desktopDuplication, 0, 0, border, dimensions.cy, TRUE, lightCountY);
+    for (UINT i = 0; i < lightCountY; i++) {
+        Light *light = &lights[lightCounter++];
+        light->color = &lightRegions[3]->m_lights[i];
+        light->x = 0;
+        light->y = i * (1.0 / (lightCountY - 1));
    }
 }
 
@@ -183,12 +180,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             HDC hdc = BeginPaint(hWnd, &ps);
 			RECT boundingBox;
 			GetClientRect(hWnd, &boundingBox);
-            for (int i = 0; i < 40; i++)
+            for (int i = 0; i < lightCount; i++)
             {
                 Light *light = &lights[i];
 				LOGBRUSH lbBrushDefinition;
 				lbBrushDefinition.lbStyle = BS_SOLID;
-                lbBrushDefinition.lbColor = light->color;
+                lbBrushDefinition.lbColor = *light->color;
                 LONG x = (LONG)(light->x * (boundingBox.right - boundingBox.left)) + boundingBox.left;
                 LONG y = (LONG)(light->y * (boundingBox.bottom - boundingBox.top)) + boundingBox.top;
                 RECT drawBox = RECT{ x - 10, y - 10, x + 10, y + 10 };
@@ -205,10 +202,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
         switch (wParam) {
 		case IDT_LOOP_TIMER: 
-            desktopDuplication.UpdateFrame();
-            for (int i = 0; i < 40; i++)
-            {
-                lights[i].color = lights[i].region->getColor();
+            try {
+                desktopDuplication.UpdateFrame();
+            } catch (const char* exception) {
+                desktopDuplication.StartDuplication(0);
+                break;
+            }
+            for (int i = 0; i < 4; i++) {
+                lightRegions[i]->UpdateLights();
             }
             InvalidateRect(hWnd, NULL, FALSE);
             UpdateWindow(hWnd);

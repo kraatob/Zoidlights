@@ -2,7 +2,8 @@
 
 DesktopDuplication::DesktopDuplication(Device *device) :
     m_dxgiOutputDuplication(nullptr),
-	m_acquiredDesktopImage(nullptr) {
+	m_acquiredDesktopImage(nullptr),
+    m_outputNumber(-1) {
     m_device = device;
 }
 
@@ -23,6 +24,7 @@ DesktopDuplication::~DesktopDuplication() {
 // Init the desktop duplication for display number outputNumber.
 // 
 void DesktopDuplication::StartDuplication(UINT outputNumber) {
+    m_outputNumber = outputNumber;
     IDXGIOutput1* dxgiOutput1 = m_device->GetDxgiOutput1(outputNumber);
 
     // Create desktop duplication
@@ -36,8 +38,7 @@ void DesktopDuplication::StartDuplication(UINT outputNumber) {
     }
 }
 
-void DesktopDuplication::UpdateFrame()
-{
+void DesktopDuplication::UpdateFrame() {
     IDXGIResource* DesktopResource = nullptr;
     DXGI_OUTDUPL_FRAME_INFO FrameInfo;
 
@@ -48,6 +49,19 @@ void DesktopDuplication::UpdateFrame()
     if (hr == DXGI_ERROR_WAIT_TIMEOUT) {
         // Display has not been updated
         return;
+    }
+    if (hr == DXGI_ERROR_ACCESS_LOST) {
+		if (m_acquiredDesktopImage) {
+			m_acquiredDesktopImage->Release();
+            m_acquiredDesktopImage = nullptr;
+		}
+        m_dxgiOutputDuplication->Release();
+        m_dxgiOutputDuplication = nullptr;
+        StartDuplication(m_outputNumber);
+        return UpdateFrame();
+    }
+    if (hr != S_OK) {
+        throw "Could not acquire next image.";
     }
 
     // Release old frame
@@ -61,4 +75,10 @@ void DesktopDuplication::UpdateFrame()
     if (FAILED(hr)) {
         throw "Failed to QI for ID3D11Texture2D from acquired IDXGIResource in DUPLICATIONMANAGER";
     }
+}
+
+Size DesktopDuplication::GetDimensions() {
+    DXGI_OUTDUPL_DESC dxgiOutputlDesc;
+    m_dxgiOutputDuplication->GetDesc(&dxgiOutputlDesc);
+	return Size{ dxgiOutputlDesc.ModeDesc.Width, dxgiOutputlDesc.ModeDesc.Height };
 }

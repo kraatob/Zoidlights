@@ -32,9 +32,9 @@ void DesktopDuplication::StartDuplication(UINT outputNumber) {
     dxgiOutput1->Release();
     if (FAILED(hr)) {
         if (hr == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE) {
-            throw "There is already the maximum number of applications using the Desktop Duplication API running, please close one of those applications and then try again.";
+            throw L"There is already the maximum number of applications using the Desktop Duplication API running, please close one of those applications and then try again.";
         }
-        throw "Failed to get duplicate output in DUPLICATIONMANAGER";
+        throw L"Failed to get duplicate output in DUPLICATIONMANAGER";
     }
 }
 
@@ -61,7 +61,7 @@ void DesktopDuplication::UpdateFrame() {
         return UpdateFrame();
     }
     if (hr != S_OK) {
-        throw "Could not acquire next image.";
+        throw L"Could not acquire next image.";
     }
 
     // Release old frame
@@ -73,7 +73,7 @@ void DesktopDuplication::UpdateFrame() {
     hr = DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&m_acquiredDesktopImage));
     DesktopResource->Release();
     if (FAILED(hr)) {
-        throw "Failed to QI for ID3D11Texture2D from acquired IDXGIResource in DUPLICATIONMANAGER";
+        throw L"Failed to QI for ID3D11Texture2D from acquired IDXGIResource in DUPLICATIONMANAGER";
     }
 }
 

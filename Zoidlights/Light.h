@@ -1,5 +1,9 @@
+#include "framework.h"
+
 #pragma once
-class Light
-{
+struct Light {
+	double x;
+	double y;
+	COLORREF *color;
 };
 

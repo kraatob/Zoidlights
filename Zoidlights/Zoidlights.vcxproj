@@ -154,6 +154,7 @@
     <ClInclude Include="DesktopDuplication.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="LightManager.h" />
     <ClInclude Include="LightRegion.h" />
     <ClInclude Include="Region.h" />
     <ClInclude Include="Resource.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="DesktopDuplication.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="LightRegion.cpp" />
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Zoidlights.cpp" />

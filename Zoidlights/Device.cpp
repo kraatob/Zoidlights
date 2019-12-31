@@ -3,6 +3,7 @@
 Device::Device() :
     m_device(nullptr),
 	m_deviceContext(nullptr) {
+    Init();
 }
 
 Device::~Device() {
@@ -46,7 +47,7 @@ void Device::Init() {
         }
     }
     if (FAILED(hr)) {
-        throw "Device creation failed";
+        throw L"Device creation failed";
     }
 }
 
@@ -55,7 +56,7 @@ IDXGIOutput1* Device::GetDxgiOutput1(UINT outputNumber) {
     IDXGIDevice* dxgiDevice = nullptr;
     HRESULT hr = m_device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
     if (FAILED(hr)) {
-        throw "Failed to QI for DXGI Device";
+        throw L"Failed to QI for DXGI Device";
     }
 
     // Get DXGI adapter
@@ -63,7 +64,7 @@ IDXGIOutput1* Device::GetDxgiOutput1(UINT outputNumber) {
     hr = dxgiDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(&dxgiAdapter));
     dxgiDevice->Release();
     if (FAILED(hr)) {
-        throw "Failed to get parent DXGI Adapter";
+        throw L"Failed to get parent DXGI Adapter";
     }
 
     // Get output
@@ -71,7 +72,7 @@ IDXGIOutput1* Device::GetDxgiOutput1(UINT outputNumber) {
     hr = dxgiAdapter->EnumOutputs(outputNumber, &dxgiOutput);
     dxgiAdapter->Release();
     if (FAILED(hr)) {
-        throw "Failed to get specified output in DUPLICATIONMANAGER";
+        throw L"Failed to get specified output in DUPLICATIONMANAGER";
     }
 
     // QI for Output 1
@@ -79,7 +80,7 @@ IDXGIOutput1* Device::GetDxgiOutput1(UINT outputNumber) {
     hr = dxgiOutput->QueryInterface(__uuidof(dxgiOutput1), reinterpret_cast<void**>(&dxgiOutput1));
     dxgiOutput->Release();
     if (FAILED(hr)) {
-        throw "Failed to QI for DxgiOutput1 in DUPLICATIONMANAGER";
+        throw L"Failed to QI for DxgiOutput1 in DUPLICATIONMANAGER";
     }
 
     return dxgiOutput1;
